@@ -13,7 +13,6 @@ import tools.jackson.databind.ObjectMapper;
 import java.io.IOException;
 
 @Service
-@AllArgsConstructor
 @RequiredArgsConstructor
 public class RuleService {
 

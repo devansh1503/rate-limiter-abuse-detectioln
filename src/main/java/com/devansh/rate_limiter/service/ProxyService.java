@@ -13,7 +13,6 @@ import reactor.core.publisher.Mono;
 import java.net.URI;
 
 @Service
-@AllArgsConstructor
 @RequiredArgsConstructor
 public class ProxyService {
     private final WebClient webClient;

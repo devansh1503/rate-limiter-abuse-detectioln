@@ -11,8 +11,6 @@ import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
 @RestController
-@AllArgsConstructor
-@NoArgsConstructor
 @RequiredArgsConstructor
 public class ProxyController {
     private ProxyService proxyService;

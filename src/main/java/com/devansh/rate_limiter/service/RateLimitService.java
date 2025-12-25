@@ -14,7 +14,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
-@AllArgsConstructor
 @RequiredArgsConstructor
 public class RateLimitService {
     private final RuleService ruleService;
@@ -44,5 +43,10 @@ public class RateLimitService {
         boolean allowed = limiter.isAllowed(key);
 
         return new RateLimitResult(allowed);
+    }
+
+    public boolean isAbuseBlock(String ip){
+        String key = "abuse:block:" + ip;
+        return connection.sync().exists(key) > 0;
     }
 }

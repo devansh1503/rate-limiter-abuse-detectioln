@@ -11,8 +11,6 @@ This project combines:
 
 Built with Spring Boot, Redis, Kafka, and MySQL.
 
----
-
 ## What problem does this solve?
 
 If you expose APIs publicly, you will face:
@@ -30,8 +28,6 @@ This service:
 
 No code changes required in your backend.
 
----
-
 ## High-level flow (simple view)
 ```
 Client → Rate Limiter Gateway → Your Backend
@@ -41,7 +37,6 @@ Client → Rate Limiter Gateway → Your Backend
 ├─ Request forwarded if allowed
 └─ Event sent to Kafka for scoring
 ```
----
 
 ## Core Features
 
@@ -66,7 +61,6 @@ Client → Rate Limiter Gateway → Your Backend
 - Docker + Docker Compose
 - Redis, Kafka, MySQL included
 
----
 
 ## Tech Stack
 
@@ -76,7 +70,6 @@ Client → Rate Limiter Gateway → Your Backend
 - MySQL (rule persistence)
 - WebClient (Reactive) for proxying
 
----
 
 ## Project Structure (important parts)
 ```
@@ -88,7 +81,6 @@ model/           → DTOs and DB entities
 service/         → Business logic
 utils/           → Lua scripts
 ```
----
 
 ## How Rate Limiting Works
 
@@ -104,7 +96,6 @@ utils/           → Lua scripts
 
 If rejected → **HTTP 429**
 
----
 
 ## Supported Rate Limiting Algorithms
 
@@ -118,7 +109,6 @@ If rejected → **HTTP 429**
 - Atomic via Lua scripts
 - Safe under high concurrency
 
----
 
 ## Abuse Detection Logic (Plain English)
 
@@ -138,7 +128,6 @@ These events are:
 - High error rate → score increases faster
 - Score > 50 → IP is blocked for 15 minutes
 
----
 
 ## API Endpoints
 
@@ -158,8 +147,6 @@ These events are:
 ```
 
 
-⸻
-
 ### Update an Existing Rule
 
 **POST** `/ratelimiter/update-rule/{id}`
@@ -175,7 +162,6 @@ These events are:
 }
 ```
 
-⸻
 
 ### Proxy Endpoint (Catch-all)
 
@@ -185,7 +171,6 @@ These events are:
 - Automatically forwarded to backend
 - Rate limiting + abuse checks applied
 
----
 
 ## HTTP Responses
 
@@ -195,8 +180,6 @@ These events are:
 | Rate limit exceeded | 429 Rate Limit Exceeded          |
 | Abuse blocked       | 429 Your request has been blocked|
 
-
-⸻
 
 ## Running the Project
 
@@ -212,7 +195,6 @@ Services started:
 - Kafka (9092)
 - Rate Limiter Gateway (9000)
 
----
 
 ## Backend Service
 
@@ -222,7 +204,6 @@ Your actual backend should run separately, for example:
 
 All requests to `http://localhost:9000/**` will be proxied there.
 
----
 
 ## Why this design works
 
@@ -231,7 +212,6 @@ All requests to `http://localhost:9000/**` will be proxied there.
 - Rules in DB + cache → dynamic updates without restart
 - Single filter → clean, centralized enforcement
 
----
 
 ## Things intentionally kept simple
 
@@ -239,7 +219,6 @@ All requests to `http://localhost:9000/**` will be proxied there.
 - No UI (API-first)
 - No complex rule matching (path-based only)
 
----
 
 ## Notes
 
@@ -249,6 +228,5 @@ All requests to `http://localhost:9000/**` will be proxied there.
   - Role-based rules
   - Dashboard
  
----
 ## Author
 Built by Devansh as a deep dive into rate limiter and distributed systems.

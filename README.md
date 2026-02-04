@@ -110,7 +110,7 @@ If rejected → **HTTP 429**
 - Safe under high concurrency
 
 
-## Abuse Detection Logic (Plain English)
+## Abuse Detection Logic
 
 Every request generates an event with:
 - IP

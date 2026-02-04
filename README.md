@@ -250,5 +250,5 @@ All requests to `http://localhost:9000/**` will be proxied there.
   - Dashboard
  
 ---
-##Author
+## Author
 Built by Devansh as a deep dive into rate limiter and distributed systems.

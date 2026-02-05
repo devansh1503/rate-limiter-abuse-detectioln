@@ -174,11 +174,11 @@ These events are:
 
 ## HTTP Responses
 
-| Situation            | Response                         |
-|---------------------|----------------------------------|
-| Allowed             | Forwarded response               |
-| Rate limit exceeded | 429 Rate Limit Exceeded          |
-| Abuse blocked       | 429 Your request has been blocked|
+| Situation            | Response                          |
+|---------------------|-----------------------------------|
+| Allowed             | Forwarded response                |
+| Rate limit exceeded | 429 Rate Limit Exceeded           |
+| Abuse blocked       | 403 Your request has been blocked |
 
 
 ## Running the Project

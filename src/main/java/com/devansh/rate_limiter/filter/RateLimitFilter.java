@@ -35,7 +35,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
         String path = request.getRequestURI();
 
         if(rateLimitService.isAbuseBlock(key)){
-            response.setStatus(429);
+            response.setStatus(403);
             response.getWriter().println("Your request has been blocked");
             return;
         }

@@ -1,8 +1,11 @@
+version: "3.9"
+
 services:
-  mysql:
+
+  ratelimit_mysql_db:
     image: mysql:8.0
     container_name: ratelimit_mysql_db
-    restart: always
+    restart: unless-stopped
     environment:
       MYSQL_DATABASE: ratelimiter
       MYSQL_USER: admin
@@ -11,7 +14,7 @@ services:
     ports:
       - "3306:3306"
     healthcheck:
-      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-padmin" ]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-padmin"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -21,41 +24,69 @@ services:
   redis:
     image: redis:7-alpine
     container_name: redis
+    restart: unless-stopped
     ports:
       - "6379:6379"
-    restart: unless-stopped
+    volumes:
+      - redis_data:/data
 
   kafka:
     image: bitnami/kafka:latest
     container_name: kafka
+    restart: unless-stopped
     ports:
-      - "9092:9092"
+      - "9092:9092"     # Internal Docker communication
+      - "29092:29092"   # External host access
     environment:
+      # KRaft mode (no Zookeeper)
       KAFKA_CFG_NODE_ID: 1
       KAFKA_CFG_PROCESS_ROLES: broker,controller
       KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
-      KAFKA_CFG_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
-      KAFKA_CFG_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
-      KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+
+      # Listeners
+      KAFKA_CFG_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:29092
+      KAFKA_CFG_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,EXTERNAL://localhost:29092
+      KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT
       KAFKA_CFG_CONTROLLER_LISTENER_NAMES: CONTROLLER
+
+      # Other configs
       KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE: true
-    restart: unless-stopped
+      ALLOW_PLAINTEXT_LISTENER: yes
+
+    volumes:
+      - kafka_data:/bitnami/kafka
 
   rate-limiter:
     build: .
     container_name: rate-limiter-gateway
+    restart: unless-stopped
     ports:
       - "9000:9000"
+
     depends_on:
-      - redis
-      - kafka
-      - ratelimit_mysql_db
+      ratelimit_mysql_db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      kafka:
+        condition: service_started
+
     environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://ratelimit_mysql_db:3306/ratelimiter
+      SPRING_DATASOURCE_USERNAME: admin
+      SPRING_DATASOURCE_PASSWORD: admin
+
       SPRING_REDIS_HOST: redis
       SPRING_REDIS_PORT: 6379
+
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+
       BACKEND_BASE_URL: http://host.docker.internal:8080
-    restart: unless-stopped
+
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
 volumes:
   mysql_ratelimiter_data:
+  redis_data:
+  kafka_data:

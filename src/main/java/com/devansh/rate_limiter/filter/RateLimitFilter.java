@@ -42,6 +42,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
         }
 
         if (rateLimitService.isAbuseBlock(key)) {
+            System.out.println("ABUSE BLOCKED FOR IP: " + key);
             response.setStatus(403);
             response.getWriter().println("Your request has been blocked");
             return;
@@ -49,6 +50,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
 
         RateLimitResult result = rateLimitService.check(key, path);
         if (!result.isAllowed()) {
+            System.out.println("Rate Limit: " + path);
             response.setStatus(429);
             response.getWriter().println("Rate Limit Exceeded");
             return;
@@ -57,11 +59,20 @@ public class RateLimitFilter extends OncePerRequestFilter {
 
         long start = System.currentTimeMillis();
 
-        try{
-            proxyService.forward(request);
-//            filterChain.doFilter(request, response);
+        try {
+            var responseEntity = proxyService.forward(request).block();
+
+            response.setStatus(responseEntity.getStatusCode().value());
+
+            if (responseEntity.getBody() != null) {
+                response.getOutputStream().write(responseEntity.getBody());
+            }
         }
         finally {
+            if(isAdmin(path)){
+                return;
+            }
+            System.out.println("HERE IN KAFKA BLOCK");
             abuseEventProducer.publish("abuse-events", key, buildEventJson(request, response, start));
         }
     }

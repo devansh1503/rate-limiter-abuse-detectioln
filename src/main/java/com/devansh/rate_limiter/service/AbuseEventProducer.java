@@ -11,6 +11,7 @@ public class AbuseEventProducer {
     private final KafkaTemplate<String, String> kafkaTemplate;
 
     public void publish(String topic, String key, String value) {
+        System.out.println("Inside Publish");
         kafkaTemplate.send(topic, key, value);
     }
 }

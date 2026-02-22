@@ -12,12 +12,12 @@ public class RedisTokenBucketRateLimiter implements RateLimiter {
     public RedisTokenBucketRateLimiter(
             RedisCommands<String, String> redis,
             long capacity,
-            long refillRatePerMillis,
+            double refillRatePerMillis,
             String luaScript
     ) {
         this.redis = redis;
         this.capacity = capacity;
-        this.refillRatePerMillis = refillRatePerMillis/1000.0;
+        this.refillRatePerMillis = refillRatePerMillis;
         this.luaScript = luaScript;
 
     }

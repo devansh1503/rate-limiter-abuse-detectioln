@@ -48,7 +48,7 @@ public class RuleService {
         redis.set(rateLimitRuleRequest.getEndpoint(), objectMapper.writeValueAsString(redisRule));
 
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(rateLimitRuleDB);
     }
 
     public ResponseEntity<?> updateRule(long id, RateLimitRuleRequest rateLimitRuleRequest) {
@@ -76,6 +76,7 @@ public class RuleService {
 
     public RateLimitRule getRule(String api){
         String json = connection.sync().get(api);
+        System.out.println(json);
         try {
             if(json == null){
                 return null;

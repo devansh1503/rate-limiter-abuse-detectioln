@@ -12,6 +12,7 @@ public class AbuseEventConsumer {
 
     @KafkaListener(topics = "abuse-events", groupId = "abuse-detector")
     public void consume(String message) {
+        System.out.println("Inside consumer message: " + message);
         scoreService.process(message);
     }
 }

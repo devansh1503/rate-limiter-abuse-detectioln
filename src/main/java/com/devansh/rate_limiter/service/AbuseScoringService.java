@@ -15,6 +15,7 @@ public class AbuseScoringService {
     private final ObjectMapper objectMapper;
 
     public void process(String json){
+        System.out.println(json);
         AbuseEvent event = parse(json);
         String ip = event.getIp();
 
@@ -22,11 +23,13 @@ public class AbuseScoringService {
         connection.sync().expire("abuse:request:"+ip, 60);
 
         if(event.getStatus() >= 400){
+            System.out.println("ERROR INCR");
             connection.sync().incr("abuse:err:"+ip);
             connection.sync().expire("abuse:err:"+ip, 60);
         }
 
         int score = calculateScore(ip);
+        System.out.println("score:"+score);
         long totalScore = connection.sync().incrby("abuse:score:"+ip, score);
 
         if(totalScore == score) {

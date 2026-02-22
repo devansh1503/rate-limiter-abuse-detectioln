@@ -24,13 +24,26 @@ public class RateLimitService {
     public RateLimitResult check(String key, String api){
 
         RateLimitRule rule = ruleService.getRule(api);
+        System.out.println(rule.toString());
+        if(rule == null){
+            return new RateLimitResult(true);
+        }
 
         RateLimiter limiter;
+
+        String rateLimiterClassKey = api+"-"+rule.getAlgorithm();
+
         if(rule.getAlgorithm() == Algorithm.SLIDING_WINDOW_COUNTER){
-            limiter = RateLimiterFactory.createSlidingWindow(rule.getLimit(), rule.getWindowMillis());
+            limiter = cache.computeIfAbsent(rateLimiterClassKey, a->
+                    RateLimiterFactory.createSlidingWindowRedis(
+                            connection.sync(),
+                            rule.getLimit(),
+                            rule.getWindowMillis()
+                    )
+            );
         }
         else{
-            limiter = cache.computeIfAbsent(api, a->
+            limiter = cache.computeIfAbsent(rateLimiterClassKey, a->
                     RateLimiterFactory.createTokenBucketRedis(
                             connection.sync(),
                             rule.getLimit(),
@@ -40,6 +53,7 @@ public class RateLimitService {
 //            limiter = RateLimiterFactory.createTokenBucket(rule.getLimit(), rule.getWindowMillis());
         }
 
+        System.out.println(limiter);
         boolean allowed = limiter.isAllowed(key);
 
         return new RateLimitResult(allowed);

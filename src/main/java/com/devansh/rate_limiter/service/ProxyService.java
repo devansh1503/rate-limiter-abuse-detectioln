@@ -17,7 +17,7 @@ import java.net.URI;
 public class ProxyService {
     private final WebClient webClient;
 
-    private static final String BACKEND_URL = "http://localhost:8080";
+    private static final String BACKEND_URL = "http://localhost:8000";
 
     public Mono<ResponseEntity<byte[]>> forward(HttpServletRequest request) {
         return webClient

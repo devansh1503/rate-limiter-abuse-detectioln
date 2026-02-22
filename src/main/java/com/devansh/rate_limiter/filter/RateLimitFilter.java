@@ -3,6 +3,7 @@ package com.devansh.rate_limiter.filter;
 import com.devansh.rate_limiter.model.AbuseEvent;
 import com.devansh.rate_limiter.model.RateLimitResult;
 import com.devansh.rate_limiter.service.AbuseEventProducer;
+import com.devansh.rate_limiter.service.ProxyService;
 import com.devansh.rate_limiter.service.RateLimitService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -22,6 +23,7 @@ import java.io.IOException;
 public class RateLimitFilter extends OncePerRequestFilter {
 
     private final RateLimitService rateLimitService;
+    private final ProxyService proxyService;
     private final AbuseEventProducer abuseEventProducer;
     private final ObjectMapper objectMapper;
 
@@ -34,27 +36,38 @@ public class RateLimitFilter extends OncePerRequestFilter {
         String key = request.getRemoteAddr();
         String path = request.getRequestURI();
 
-        if(rateLimitService.isAbuseBlock(key)){
+        if(isAdmin(path)){
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        if (rateLimitService.isAbuseBlock(key)) {
             response.setStatus(403);
             response.getWriter().println("Your request has been blocked");
             return;
         }
 
         RateLimitResult result = rateLimitService.check(key, path);
-        if(!result.isAllowed()) {
+        if (!result.isAllowed()) {
             response.setStatus(429);
             response.getWriter().println("Rate Limit Exceeded");
             return;
         }
 
+
         long start = System.currentTimeMillis();
 
         try{
-            filterChain.doFilter(request, response);
+            proxyService.forward(request);
+//            filterChain.doFilter(request, response);
         }
         finally {
             abuseEventProducer.publish("abuse-event", key, buildEventJson(request, response, start));
         }
+    }
+
+    private boolean isAdmin(String path){
+        return path.contains("/ratelimiter");
     }
 
     private String buildEventJson(HttpServletRequest request, HttpServletResponse response, long start) {

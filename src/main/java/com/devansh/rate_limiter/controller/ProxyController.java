@@ -13,9 +13,9 @@ import reactor.core.publisher.Mono;
 @RestController
 @RequiredArgsConstructor
 public class ProxyController {
-    private ProxyService proxyService;
+    private final ProxyService proxyService;
 
-    @RequestMapping("/**")
+    @RequestMapping("/xyz")
     public Mono<ResponseEntity<byte[]>> proxy(HttpServletRequest request) {
         return proxyService.forward(request);
     }

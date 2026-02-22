@@ -17,6 +17,7 @@ public class RateLimitRuleDB {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(name = "rate_limit")
     private int limit;
     private long windowMillis;
     private String endpoint;

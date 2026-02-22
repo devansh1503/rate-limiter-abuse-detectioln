@@ -62,7 +62,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
 //            filterChain.doFilter(request, response);
         }
         finally {
-            abuseEventProducer.publish("abuse-event", key, buildEventJson(request, response, start));
+            abuseEventProducer.publish("abuse-events", key, buildEventJson(request, response, start));
         }
     }
 

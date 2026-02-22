@@ -1,11 +1,15 @@
 package com.devansh.rate_limiter.model;
 
-import lombok.Builder;
-import lombok.Data;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.*;
 
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class AbuseEvent {
+
     private String ip;
     private String method;
     private String path;

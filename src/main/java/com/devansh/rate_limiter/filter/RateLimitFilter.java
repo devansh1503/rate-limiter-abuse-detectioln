@@ -35,31 +35,30 @@ public class RateLimitFilter extends OncePerRequestFilter {
 
         String key = request.getRemoteAddr();
         String path = request.getRequestURI();
-
-        if(isAdmin(path)){
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        if (rateLimitService.isAbuseBlock(key)) {
-            System.out.println("ABUSE BLOCKED FOR IP: " + key);
-            response.setStatus(403);
-            response.getWriter().println("Your request has been blocked");
-            return;
-        }
-
-        RateLimitResult result = rateLimitService.check(key, path);
-        if (!result.isAllowed()) {
-            System.out.println("Rate Limit: " + path);
-            response.setStatus(429);
-            response.getWriter().println("Rate Limit Exceeded");
-            return;
-        }
-
-
-        long start = System.currentTimeMillis();
+        long start = 0L;
 
         try {
+
+            if (isAdmin(path)) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+
+            if (rateLimitService.isAbuseBlock(key)) {
+                System.out.println("ABUSE BLOCKED FOR IP: " + key);
+                response.setStatus(403);
+                response.getWriter().println("Your request has been blocked");
+                return;
+            }
+
+            RateLimitResult result = rateLimitService.check(key, path);
+            if (!result.isAllowed()) {
+                System.out.println("Rate Limit: " + path);
+                response.setStatus(429);
+                response.getWriter().println("Rate Limit Exceeded");
+                return;
+            }
+            start = System.currentTimeMillis();
             var responseEntity = proxyService.forward(request).block();
 
             response.setStatus(responseEntity.getStatusCode().value());
